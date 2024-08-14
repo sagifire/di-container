@@ -1,0 +1,44 @@
+{
+  "name": "@sagifire/di-container",
+  "version": "1.0.0",
+  "description": "A lightweight and flexible dependency injection container designed to manage object lifetimes and resolve dependencies efficiently in JavaScript applications.",
+  "type": "module",
+  "types": "types.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    "require": "./dist/cjs/index.js",
+    "import": "./dist/esm/index.js"
+  },
+  "scripts": {
+    "build": "babel src --out-dir dist/cjs --env-name cjs && babel src --out-dir dist/esm --env-name esm",
+    "test": "mocha --require @babel/register 'test/**/*.test.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sagifire/di-container.git"
+  },
+  "keywords": [
+    "dependency-injection",
+    "container",
+    "async",
+    "IoC",
+    "DI"
+  ],
+  "author": "sagifire <achvyl@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sagifire/di-container/issues"
+  },
+  "homepage": "https://github.com/sagifire/di-container#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.14.5",
+    "@babel/core": "^7.14.6",
+    "@babel/preset-env": "^7.14.7",
+    "@babel/register": "^7.24.6",
+    "@types/node": "^22.0.0",
+    "chai": "^5.1.1",
+    "mocha": "^10.7.0"
+  },
+  "dependencies": {}
+}
