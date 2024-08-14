@@ -5,7 +5,7 @@ This library implements a simple Inversion of Control (IoC) container with suppo
 ## Strong Points:
 
 1. **Flexible Configuration:**
-    - The container supports different types of registrations: values (`TYPE_VALUE`), classes (`TYPE_CLASS`), functions (`TYPE_FUNCTION`), and factories (`TYPE_FACTORY`). This allows users to utilize the container in various scenarios.
+    - The container supports different types of registrations: values, classes, functions and factories. This allows users to utilize the container in various scenarios.
     - The lifecycle configuration (`LIFETIME_DYNAMIC`, `LIFETIME_SINGLETON`) lets you control how often instances of objects are created.
 
 2. **Dynamic Dependency Resolution:**
@@ -22,7 +22,7 @@ This library implements a simple Inversion of Control (IoC) container with suppo
 
 ## Weak Points:
 
-1. The container does not support automatic dependency injection based on argument names or metadata. All dependencies must be explicitly registered and passed in `dependencies`.
+1. The container does not support automatic dependency injection based on argument names. All dependencies must be explicitly registered.
 2. There is no support for cyclic dependencies.
 3. No support for isolated contexts.
 
@@ -37,9 +37,6 @@ The container consists of the `Container` class, along with helper functions `as
 ## Creating a Container and Registering Components
 
 To use the container, you first need to define it and register all the system components that will be injected as dependencies.
-
-<details>
-<summary>Code Example</summary>
 
 ```javascript
 import {
@@ -66,12 +63,11 @@ container.register({
 
 export default container;
 ```
-</details>
 
 When registering a component, you can specify the creation mode: `LIFETIME_DYNAMIC` or `LIFETIME_SINGLETON`.
 
-- LIFETIME_DYNAMIC: The container will recreate a new instance of the component each time it is injected. Not available for asValue().
-- LIFETIME_SINGLETON: The container will create only one instance of the component for the lifetime of the container and will always inject it. Always used with asValue().
+- `LIFETIME_DYNAMIC`: The container will recreate a new instance of the component each time it is injected. Not available for `asValue()`.
+- `LIFETIME_SINGLETON`: The container will create only one instance of the component for the lifetime of the container and will always inject it. Always used with `asValue()`.
 
 ## Component Types
 
@@ -79,7 +75,7 @@ When registering a component, you can specify the creation mode: `LIFETIME_DYNAM
   ```javascript
   { 'key': asValue(someValue) }
   ```
-  Used for registering any value. Always uses LIFETIME_SINGLETON. Dependencies cannot be defined for this component type. 
+  Used for registering any value. Always uses `LIFETIME_SINGLETON`. Dependencies cannot be defined for this component type. 
 
 - ### Class - `asClass()`
   ```javascript
