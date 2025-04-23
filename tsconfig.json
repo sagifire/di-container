@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    /* Base Options: */
+    "esModuleInterop": true, // Дозволяє імпортувати CommonJS модулі як ES модулі
+    "skipLibCheck": true, // Пропускає перевірку типів у файлах декларацій (.d.ts)
+    "target": "ESNext", // Цільова версія JavaScript
+    "allowJs": true, // Дозволяє компілювати JavaScript файли
+    "resolveJsonModule": true, // Дозволяє імпортувати JSON файли
+    "moduleDetection": "force", // Гарантує, що файли розглядаються як модулі
+    "isolatedModules": true, // Необхідно для деяких транспіляторів, як Babel та Vite
+    "moduleResolution": "NodeNext", // Використовуємо Node.js Next generation resolution
+
+    /* Strictness */
+    "strict": true, // Вмикає всі строгі перевірки типів
+    "noUncheckedIndexedAccess": true, // Додає 'undefined' до типів при доступі за індексом
+
+    /* If NOT transpiling with TypeScript: */
+    "module": "NodeNext", // Використовує сучасний синтаксис модулів
+    "noEmit": true, // Не генерує вихідні файли JavaScript (Vite буде цим займатись)
+
+    /* If your code runs in the DOM: */
+    // "lib": ["esnext", "dom", "dom.iterable"],
+
+    /* If your code doesn't run in the DOM: */
+    "lib": ["ESNext"],
+
+    /* Path Aliases */
+    "baseUrl": ".", // Базовий каталог для розв'язання невідносних імен модулів
+    "paths": {
+      "@/*": ["src/*"] // Приклад псевдоніма шляху
+    }
+  },
+  "include": ["src/**/*.ts", "types.d.ts"], // Включає файли для компіляції
+  "exclude": ["node_modules", "dist"] // Виключає директорії
+}

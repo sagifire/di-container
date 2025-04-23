@@ -1,17 +1,24 @@
 {
   "name": "@sagifire/di-container",
   "version": "1.0.0",
-  "description": "A lightweight and flexible dependency injection container designed to manage object lifetimes and resolve dependencies efficiently in JavaScript applications.",
+  "description": "A lightweight and flexible dependency injection container designed to manage object lifetimes and resolve dependencies efficiently in TypeScript/JavaScript applications.",
   "type": "module",
-  "types": "types.d.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
     "require": "./dist/cjs/index.js",
-    "import": "./dist/esm/index.js"
+    "import": "./dist/esm/index.js",
+    "types": "./dist/index.d.ts"   
   },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
-    "build": "babel src --out-dir dist/cjs --env-name cjs && babel src --out-dir dist/esm --env-name esm",
+    "dev": "vite",
+    "build": "vite build",
     "test": "mocha --require @babel/register 'test/**/*.test.js'"
   },
   "repository": {
@@ -36,9 +43,11 @@
     "@babel/core": "^7.14.6",
     "@babel/preset-env": "^7.14.7",
     "@babel/register": "^7.24.6",
-    "@types/node": "^22.0.0",
+    "@types/node": "^22.14.1",
     "chai": "^5.1.1",
-    "mocha": "^10.7.0"
-  },
-  "dependencies": {}
+    "mocha": "^10.7.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.2",
+    "vite-plugin-dts": "^4.5.3"
+  }
 }
