@@ -83,9 +83,10 @@ const u = class u {
    * Отримує екземпляр залежності за її ID.
    * @param id - Ідентифікатор залежності.
    * @returns Проміс, який розв'язується екземпляром залежності.
-   * @template T - Очікуваний тип залежності.
+   * @template T - Явно вказаний тип залежності (перевизначає тип зі схеми).
+   * @template K - Тип ідентифікатора залежності, обмежений ключами схеми або DependencyId.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // Оновлюємо сигнатуру методу get
   async get(e) {
     if (!this.hasRegistration(e))
       throw new s(`No registration found for id: ${e}`);
@@ -151,6 +152,7 @@ const u = class u {
    * @returns Проміс, який розв'язується значенням, повернутим фабрикою.
    * @template T - Очікуваний тип значення.
    */
+  // Оновлюємо сигнатуру buildFactory, щоб приймати FactoryFunction з відповідною схемою
   async buildFactory(e, n) {
     const t = await this.resolveDependencies(n.dependencies || []);
     let r = e(t, this, n);

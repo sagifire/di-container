@@ -16,8 +16,9 @@ export type Dependencies = DependencyId[];
 export type ResolvedDependencies = Record<DependencyId, any>; // Можна уточнити тип залежностей, якщо відомо
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ClassConstructor<T = any> = new (...args: any[]) => T; // Тип для конструктора класу
+// Оновлюємо FactoryFunction, щоб приймати дженерік Container
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FactoryFunction<T = any> = (deps: ResolvedDependencies, container: Container, config: RegistrationConfig) => T | Promise<T>;
+export type FactoryFunction<T = any, S extends TypeSchema = {}> = (deps: ResolvedDependencies, container: Container<S>, config: RegistrationConfig) => T | Promise<T>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DependencyFunction<T = any> = (deps: ResolvedDependencies, ...args: any[]) => T;
 
@@ -42,6 +43,10 @@ type RegistrationsMap = Record<DependencyId, RegistrationConfig>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SingletonsMap = Record<DependencyId, any>; // Зберігаємо вже створені синглтони
 
+// Тип для схеми типів контейнера
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type TypeSchema = Record<DependencyId, any>;
+
 export class ContainerError extends Error {
     constructor(message: string) { // Додаємо тип для message
         super(message);
@@ -63,7 +68,9 @@ export class ContainerCyclicDependenceError extends ContainerError {
     }
 }
 
-export class Container {
+// Робимо клас Container дженериком, що приймає схему типів Schema
+// За замовчуванням Schema - це пустий об'єкт
+export class Container<Schema extends TypeSchema = {}> {
     // Статичні налаштування за замовчуванням
     static configDefaults: Required<ContainerConfig> = { // Використовуємо Required для гарантії наявності всіх полів
         defaultLifetime: LIFETIME_SINGLETON
@@ -193,10 +200,22 @@ export class Container {
      * Отримує екземпляр залежності за її ID.
      * @param id - Ідентифікатор залежності.
      * @returns Проміс, який розв'язується екземпляром залежності.
-     * @template T - Очікуваний тип залежності.
+     * @template T - Явно вказаний тип залежності (перевизначає тип зі схеми).
+     * @template K - Тип ідентифікатора залежності, обмежений ключами схеми або DependencyId.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async get<T = any>(id: DependencyId): Promise<T> { // Додаємо тип для id, повертаного значення та Generic T
+    // Оновлюємо сигнатуру методу get
+    async get<
+        T = any, // Тип для явного зазначення
+        K extends DependencyId = DependencyId // Тип ID, може бути ключем зі Schema
+    >(id: K): Promise<
+        // Використовуємо умовний тип для визначення типу повернення:
+        // Якщо T не є 'any' (тобто тип вказано явно), повертаємо T.
+        // Інакше, перевіряємо, чи є K ключем у Schema.
+        // Якщо так, повертаємо тип Schema[K].
+        // Якщо ні, повертаємо 'any'.
+        // Використовуємо `unknown` замість `any` для кращої типізації за замовчуванням
+        T extends unknown ? (K extends keyof Schema ? Schema[K] : unknown) : T
+    > {
         // Перевіряємо наявність реєстрації
         if (!this.hasRegistration(id)) {
             throw new ContainerConfigError(`No registration found for id: ${id}`);
@@ -211,7 +230,9 @@ export class Container {
         // Ми впевнені, що вона існує завдяки hasRegistration
         const registration = this.registrations[id]!; // Використовуємо non-null assertion
 
-        let result: T; // Типізуємо результат
+        // Визначаємо тип результату заздалегідь, використовуючи той самий умовний тип
+        type ResultType = T extends unknown ? (K extends keyof Schema ? Schema[K] : unknown) : T;
+        let result: ResultType;
 
         // Додаємо ID до множини відстеження
         this.depsInResolving.add(id);
@@ -220,12 +241,15 @@ export class Container {
             if (registration.lifetime === LIFETIME_SINGLETON) {
                 if (!Object.prototype.hasOwnProperty.call(this.singletons, id)) {
                     // Створюємо синглтон, якщо його ще немає
-                    this.singletons[id] = await this.build<T>(registration);
+                    // Приводимо тип результату build до ResultType
+                    this.singletons[id] = await this.build<ResultType>(registration);
                 }
-                result = this.singletons[id];
+                // Приводимо тип синглтона до ResultType
+                result = this.singletons[id] as ResultType;
             } else {
                 // Створюємо новий екземпляр для динамічного життєвого циклу
-                result = await this.build<T>(registration);
+                // Приводимо тип результату build до ResultType
+                result = await this.build<ResultType>(registration);
             }
         } finally {
             // Видаляємо ID з множини відстеження після завершення (успішного чи ні)
@@ -267,9 +291,10 @@ export class Container {
             case TYPE_FACTORY:
                  // Переконуємося, що value є функцією
                 if (typeof config.value !== 'function') {
-                     throw new ContainerConfigError(`Value for FACTORY registration must be a function.`);
+                 throw new ContainerConfigError(`Value for FACTORY registration must be a function.`);
                 }
-                return await this.buildFactory<T>(config.value as FactoryFunction<T>, config);
+                // Передаємо тип Schema до buildFactory
+                return await this.buildFactory<T>(config.value as FactoryFunction<T, Schema>, config);
             case TYPE_VALUE:
                 // Просто повертаємо значення
                 return config.value as T;
@@ -305,9 +330,10 @@ export class Container {
      * @returns Проміс, який розв'язується значенням, повернутим фабрикою.
      * @template T - Очікуваний тип значення.
      */
-    private async buildFactory<T>(factory: FactoryFunction<T>, config: RegistrationConfig): Promise<T> { // Додаємо типи
+    // Оновлюємо сигнатуру buildFactory, щоб приймати FactoryFunction з відповідною схемою
+    private async buildFactory<T>(factory: FactoryFunction<T, Schema>, config: RegistrationConfig): Promise<T> {
         const resolvedDeps = await this.resolveDependencies(config.dependencies || []);
-        // Викликаємо фабрику, передаючи залежності, контейнер та конфігурацію
+        // Викликаємо фабрику, передаючи залежності, контейнер (this) та конфігурацію
         let value = factory(resolvedDeps, this, config);
         // Обробляємо випадок, коли фабрика повертає проміс
         if (typeof value === 'object' && value !== null && value instanceof Promise) {
@@ -429,7 +455,8 @@ export const asFunction = (functionValue: DependencyFunction, ...args: (Lifetime
  * @param args - Додаткові параметри: lifetime та/або масив dependencies.
  * @returns Об'єкт конфігурації RegistrationConfig.
  */
-export const asFactory = (factoryValue: FactoryFunction, ...args: (Lifetime | Dependencies)[]): RegistrationConfig => { // Додаємо типи
+// Оновлюємо asFactory, щоб приймати FactoryFunction без вказання схеми (вона буде виведена)
+export const asFactory = (factoryValue: FactoryFunction<any, any>, ...args: (Lifetime | Dependencies)[]): RegistrationConfig => {
     return {
         value: factoryValue,
         type: TYPE_FACTORY,

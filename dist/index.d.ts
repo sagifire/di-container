@@ -10,7 +10,7 @@ export type DependencyId = string;
 export type Dependencies = DependencyId[];
 export type ResolvedDependencies = Record<DependencyId, any>;
 export type ClassConstructor<T = any> = new (...args: any[]) => T;
-export type FactoryFunction<T = any> = (deps: ResolvedDependencies, container: Container, config: RegistrationConfig) => T | Promise<T>;
+export type FactoryFunction<T = any, S extends TypeSchema = {}> = (deps: ResolvedDependencies, container: Container<S>, config: RegistrationConfig) => T | Promise<T>;
 export type DependencyFunction<T = any> = (deps: ResolvedDependencies, ...args: any[]) => T;
 export interface RegistrationConfig {
     value: any;
@@ -22,6 +22,7 @@ export interface RegistrationConfig {
 export interface ContainerConfig {
     defaultLifetime?: Lifetime;
 }
+export type TypeSchema = Record<DependencyId, any>;
 export declare class ContainerError extends Error {
     constructor(message: string);
 }
@@ -31,7 +32,7 @@ export declare class ContainerConfigError extends ContainerError {
 export declare class ContainerCyclicDependenceError extends ContainerError {
     constructor(message: string);
 }
-export declare class Container {
+export declare class Container<Schema extends TypeSchema = {}> {
     static configDefaults: Required<ContainerConfig>;
     private readonly config;
     private readonly registrations;
@@ -54,9 +55,11 @@ export declare class Container {
      * Отримує екземпляр залежності за її ID.
      * @param id - Ідентифікатор залежності.
      * @returns Проміс, який розв'язується екземпляром залежності.
-     * @template T - Очікуваний тип залежності.
+     * @template T - Явно вказаний тип залежності (перевизначає тип зі схеми).
+     * @template K - Тип ідентифікатора залежності, обмежений ключами схеми або DependencyId.
      */
-    get<T = any>(id: DependencyId): Promise<T>;
+    get<T = any, // Тип для явного зазначення
+    K extends DependencyId = DependencyId>(id: K): Promise<T extends unknown ? (K extends keyof Schema ? Schema[K] : unknown) : T>;
     /**
      * Внутрішній метод для побудови екземпляра залежності на основі конфігурації.
      * @param config - Конфігурація реєстрації.
@@ -115,4 +118,4 @@ export declare const asFunction: (functionValue: DependencyFunction, ...args: (L
  * @param args - Додаткові параметри: lifetime та/або масив dependencies.
  * @returns Об'єкт конфігурації RegistrationConfig.
  */
-export declare const asFactory: (factoryValue: FactoryFunction, ...args: (Lifetime | Dependencies)[]) => RegistrationConfig;
+export declare const asFactory: (factoryValue: FactoryFunction<any, any>, ...args: (Lifetime | Dependencies)[]) => RegistrationConfig;
