@@ -169,14 +169,18 @@ export class Container<Schema extends TypeSchema = {}> {
                 // Обробка залежностей: використовуємо config.dependencies, якщо є, інакше []
                 if (typeof registrationConfig.dependencies === 'undefined') {
                     registrationConfig.dependencies = [];
-                } else if (!Array.isArray(registrationConfig.dependencies)) {
+                    if (typeof registrationConfig.value._deps !== 'undefined') {
+                        registrationConfig.dependencies = registrationConfig.value._deps;
+                    }
+                } 
+                
+                if (!Array.isArray(registrationConfig.dependencies)) {
                      throw new ContainerConfigError('Registration dependencies must be an array');
                 } else if (!registrationConfig.dependencies.every(dep => typeof dep === 'string')) {
                      // Перевіряємо, чи dependencies є масивом рядків
                      throw new ContainerConfigError('Registration dependencies must be an array of strings');
                 }
-                // Видаляємо застаріле поле _deps, якщо воно є
-                delete registrationConfig._deps;
+                
             }
 
             // Для TYPE_VALUE завжди встановлюємо LIFETIME_DYNAMIC
@@ -268,6 +272,10 @@ export class Container<Schema extends TypeSchema = {}> {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async build<T = any>(config: RegistrationConfig): Promise<T> { // Додаємо тип для config, повертаного значення та Generic T
+        if (config.value && undefined !== config.value._deps && !Array.isArray(config.value._deps)) {
+            throw new ContainerConfigError('Invalid dependencies format in value. Expected an array.');
+        }
+
         // Визначаємо залежності для побудови
         const dependencies = config.dependencies || config?.value?._deps || []; // Використовуємо пустий масив, якщо залежності не вказані
 

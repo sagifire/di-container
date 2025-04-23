@@ -57,6 +57,23 @@ describe('Container', () => {
         const instance = await container.get('myClass');
         expect(instance.dep).toBeInstanceOf(Dependency);
         expect(instance.dep.value).toBe('dependency');
+
+        // Test with buildin dependencies
+
+        class MyClass2 {
+            static _deps = ['dep'];    
+            constructor({ dep }) {
+                this.dep = dep;
+            }
+        }
+
+        const container2 = new Container();
+        container2.register('dep', asClass(Dependency));
+        container2.register('myClass2', asClass(MyClass2));
+
+        const instance2 = await container2.get('myClass2');
+        expect(instance2.dep).toBeInstanceOf(Dependency);
+        expect(instance2.dep.value).toBe('dependency');
     });
 
     it('should register and resolve a function', async () => {
@@ -70,6 +87,16 @@ describe('Container', () => {
 
         const func = await container.get('myFunction');
         expect(func()).toBe('Value: myConfig');
+
+        // Test with buildin dependencies
+        myFunction._deps = ['config'];
+        const container2 = new Container();
+        container2.register('config', asValue('myConfig'));
+        container2.register('myFunction', asFunction(myFunction));
+
+        const func2 = await container.get('myFunction');
+        expect(func2()).toBe('Value: myConfig');
+
     });
 
     it('should register and resolve a factory', async () => {
@@ -83,6 +110,16 @@ describe('Container', () => {
 
         const result = await container.get('myFactory');
         expect(result).toBe('dependency from factory');
+
+        // Test with buildin dependencies
+        myFactory._deps = ['dep'];
+
+        const container2 = new Container();
+        container2.register('dep', asValue('dependency'));
+        container2.register('myFactory', asFactory(myFactory));
+
+        const result2 = await container.get('myFactory');
+        expect(result2).toBe('dependency from factory');
     });
 
     it('should throw an error for undefined registration value', () => {
@@ -130,6 +167,17 @@ describe('Container', () => {
         const instance = await container.build(config);
 
         expect(instance.dep).toBe('dependency');
+
+        // Test with buildin dependencies
+        MyClass._deps = ['dep'];
+
+        const container2 = new Container();
+        container2.register('dep', asValue('dependency'));
+
+        const config2 = asClass(MyClass);
+        const instance2 = await container.build(config2);
+
+        expect(instance2.dep).toBe('dependency');
     });
 
     it('should resolve nested dependencies', async () => {
@@ -158,6 +206,18 @@ describe('Container', () => {
 
         const instance = await container.get('myClass');
         expect(instance.dep2.dep1.name).toBe('Dependency1');
+
+        // Test with buildin dependencies
+        Dependency2._deps = ['dep1'];
+        MyClass._deps = ['dep2'];
+
+        const container2 = new Container();
+        container2.register('dep1', asClass(Dependency1));
+        container2.register('dep2', asClass(Dependency2));
+        container2.register('myClass', asClass(MyClass));
+
+        const instance2 = await container.get('myClass');
+        expect(instance2.dep2.dep1.name).toBe('Dependency1');
     });
 
     it('should throw error for invalid type in registration', () => {
@@ -192,6 +252,18 @@ describe('Container', () => {
         container.register('myClass', asClass(MyClass, ['dep2']));
 
         await expect(container.get('myClass')).rejects.toThrow(ContainerCyclicDependenceError);
+
+        // Test with buildin dependencies
+        Dependency1._deps = ['dep2'];
+        Dependency2._deps = ['dep1'];
+        MyClass._deps = ['dep2'];
+
+        const container2 = new Container();
+        container2.register('dep1', asClass(Dependency1));
+        container2.register('dep2', asClass(Dependency2));
+        container2.register('myClass', asClass(MyClass));
+
+        await expect(container2.get('myClass')).rejects.toThrow(ContainerCyclicDependenceError);
     });
 
 });

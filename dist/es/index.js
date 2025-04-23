@@ -1,18 +1,18 @@
 var y = Object.defineProperty;
 var h = (i, e, n) => e in i ? y(i, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : i[e] = n;
 var a = (i, e, n) => h(i, typeof e != "symbol" ? e + "" : e, n);
-const T = 0, v = 1, g = 0, I = 1, C = 2, m = 3;
-class d extends Error {
+const E = 0, T = 1, g = 0, I = 1, C = 2, m = 3;
+class p extends Error {
   constructor(e) {
     super(e), this.name = "ContainerError";
   }
 }
-class s extends d {
+class s extends p {
   constructor(e) {
     super(e), this.name = "ContainerConfigError";
   }
 }
-class w extends d {
+class w extends p {
   constructor(e) {
     super(e), this.name = "ContainerCyclicDependenceError";
   }
@@ -67,13 +67,10 @@ const u = class u {
       if ([2, 3, 1].includes(t.type)) {
         if (typeof t.value != "function")
           throw new s("Registration value must be a function for CLASS, FACTORY, or FUNCTION types");
-        if (typeof t.dependencies > "u")
-          t.dependencies = [];
-        else if (Array.isArray(t.dependencies)) {
+        if (typeof t.dependencies > "u" && (t.dependencies = [], typeof t.value._deps < "u" && (t.dependencies = t.value._deps)), Array.isArray(t.dependencies)) {
           if (!t.dependencies.every((c) => typeof c == "string"))
             throw new s("Registration dependencies must be an array of strings");
         } else throw new s("Registration dependencies must be an array");
-        delete t._deps;
       }
       t.type === 0 && (t.lifetime = 0), this.registrations[e] = t, Object.prototype.hasOwnProperty.call(this.singletons, e) && delete this.singletons[e];
     } else
@@ -111,6 +108,8 @@ const u = class u {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async build(e) {
     var t;
+    if (e.value && e.value._deps !== void 0 && !Array.isArray(e.value._deps))
+      throw new s("Invalid dependencies format in value. Expected an array.");
     const n = e.dependencies || ((t = e == null ? void 0 : e.value) == null ? void 0 : t._deps) || [];
     switch (e.type) {
       case 2:
@@ -176,8 +175,8 @@ a(u, "configDefaults", {
   // Використовуємо Required для гарантії наявності всіх полів
   defaultLifetime: 1
 });
-let p = u;
-const f = (i) => {
+let f = u;
+const d = (i) => {
   const e = {};
   for (const n of i)
     if (typeof n == "number") {
@@ -195,40 +194,40 @@ const f = (i) => {
     } else
       throw new s(`Can't resolve config argument type: ${typeof n}`);
   return e;
-}, L = (i) => ({
+}, A = (i) => ({
   value: i,
   type: 0
   // lifetime автоматично встановлюється в DYNAMIC в методі register
-}), Y = (i, ...e) => ({
+}), L = (i, ...e) => ({
   value: i,
   type: 2,
-  ...f(e)
+  ...d(e)
   // Розбираємо додаткові аргументи
-}), A = (i, ...e) => ({
+}), _ = (i, ...e) => ({
   value: i,
   type: 1,
-  ...f(e)
+  ...d(e)
   // Розбираємо додаткові аргументи
-}), F = (i, ...e) => ({
+}), Y = (i, ...e) => ({
   value: i,
   type: 3,
-  ...f(e)
+  ...d(e)
   // Розбираємо додаткові аргументи
 });
 export {
-  p as Container,
+  f as Container,
   s as ContainerConfigError,
   w as ContainerCyclicDependenceError,
-  d as ContainerError,
-  T as LIFETIME_DYNAMIC,
-  v as LIFETIME_SINGLETON,
+  p as ContainerError,
+  E as LIFETIME_DYNAMIC,
+  T as LIFETIME_SINGLETON,
   C as TYPE_CLASS,
   m as TYPE_FACTORY,
   I as TYPE_FUNCTION,
   g as TYPE_VALUE,
-  Y as asClass,
-  F as asFactory,
-  A as asFunction,
-  L as asValue
+  L as asClass,
+  Y as asFactory,
+  _ as asFunction,
+  A as asValue
 };
 //# sourceMappingURL=index.js.map
