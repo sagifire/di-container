@@ -1,34 +1,34 @@
 var y = Object.defineProperty;
-var h = (i, e, n) => e in i ? y(i, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : i[e] = n;
-var a = (i, e, n) => h(i, typeof e != "symbol" ? e + "" : e, n);
+var h = (r, e, n) => e in r ? y(r, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : r[e] = n;
+var o = (r, e, n) => h(r, typeof e != "symbol" ? e + "" : e, n);
 const E = 0, T = 1, g = 0, I = 1, C = 2, m = 3;
-class p extends Error {
+class a extends Error {
   constructor(e) {
     super(e), this.name = "ContainerError";
   }
 }
-class s extends p {
+class s extends a {
   constructor(e) {
     super(e), this.name = "ContainerConfigError";
   }
 }
-class w extends p {
+class w extends a {
   constructor(e) {
     super(e), this.name = "ContainerCyclicDependenceError";
   }
 }
-const u = class u {
+const l = class l {
   // Множина для відстеження циклічних залежностей
   constructor(e) {
     // Властивості класу з типами
-    a(this, "config");
+    o(this, "config");
     // Конфігурація контейнера (робимо її Required)
-    a(this, "registrations");
+    o(this, "registrations");
     // Мапа реєстрацій
-    a(this, "singletons");
+    o(this, "singletons");
     // Кеш синглтонів
-    a(this, "depsInResolving");
-    this.config = { ...u.configDefaults, ...e }, this.registrations = {}, this.singletons = {}, this.depsInResolving = /* @__PURE__ */ new Set();
+    o(this, "depsInResolving");
+    this.config = { ...l.configDefaults, ...e }, this.registrations = {}, this.singletons = {}, this.depsInResolving = /* @__PURE__ */ new Set();
   }
   /**
    * Перевіряє, чи існує реєстрація з вказаним ID.
@@ -47,10 +47,10 @@ const u = class u {
     if (typeof e == "object" && !Array.isArray(e) && e !== null) {
       for (const t in e)
         if (Object.prototype.hasOwnProperty.call(e, t)) {
-          const r = e[t];
-          if (typeof r != "object" || r === null || typeof r.type > "u" || typeof r.value > "u")
+          const i = e[t];
+          if (typeof i != "object" || i === null || typeof i.type > "u" || typeof i.value > "u")
             throw new s(`Invalid configuration provided for key "${t}" during bulk registration.`);
-          this.register(t, r);
+          this.register(t, i);
         }
     } else if (typeof e == "string") {
       if (!n)
@@ -68,7 +68,7 @@ const u = class u {
         if (typeof t.value != "function")
           throw new s("Registration value must be a function for CLASS, FACTORY, or FUNCTION types");
         if (typeof t.dependencies > "u" && (t.dependencies = [], typeof t.value._deps < "u" && (t.dependencies = t.value._deps)), Array.isArray(t.dependencies)) {
-          if (!t.dependencies.every((c) => typeof c == "string"))
+          if (!t.dependencies.every((u) => typeof u == "string"))
             throw new s("Registration dependencies must be an array of strings");
         } else throw new s("Registration dependencies must be an array");
       }
@@ -94,6 +94,8 @@ const u = class u {
     this.depsInResolving.add(e);
     try {
       n.lifetime === 1 ? (Object.prototype.hasOwnProperty.call(this.singletons, e) || (this.singletons[e] = await this.build(n)), t = this.singletons[e]) : t = await this.build(n);
+    } catch (i) {
+      throw i instanceof a ? i : new a(`Error while resolving dependency "${e}": ${String(i)}`);
     } finally {
       this.depsInResolving.delete(e);
     }
@@ -119,8 +121,8 @@ const u = class u {
       case 1:
         if (typeof e.value != "function")
           throw new s("Value for FUNCTION registration must be a function.");
-        const r = e.value, o = await this.resolveDependencies(n);
-        return (...c) => r(o, ...c);
+        const i = e.value, d = await this.resolveDependencies(n);
+        return (...u) => i(d, ...u);
       // Приведення типу може бути не зовсім точним тут
       case 3:
         if (typeof e.value != "function")
@@ -129,8 +131,8 @@ const u = class u {
       case 0:
         return e.value;
       default:
-        const l = e.type;
-        throw new s(`Unhandled registration type: ${l}`);
+        const f = e.type;
+        throw new s(`Unhandled registration type: ${f}`);
     }
   }
   /**
@@ -155,8 +157,8 @@ const u = class u {
   // Оновлюємо сигнатуру buildFactory, щоб приймати FactoryFunction з відповідною схемою
   async buildFactory(e, n) {
     const t = await this.resolveDependencies(n.dependencies || []);
-    let r = e(t, this, n);
-    return typeof r == "object" && r !== null && r instanceof Promise && (r = await r), r;
+    let i = e(t, this, n);
+    return typeof i == "object" && i !== null && i instanceof Promise && (i = await i), i;
   }
   /**
    * Розв'язує список залежностей, отримуючи їх екземпляри з контейнера.
@@ -164,21 +166,21 @@ const u = class u {
    * @returns Проміс, який розв'язується об'єктом з розв'язаними залежностями.
    */
   async resolveDependencies(e) {
-    const n = {}, t = e.map((o) => this.get(o)), r = await Promise.all(t);
-    return e.forEach((o, l) => {
-      n[o] = r[l];
-    }), n;
+    const n = {};
+    for (const t of e)
+      n[t] = await this.get(t);
+    return n;
   }
 };
 // Статичні налаштування за замовчуванням
-a(u, "configDefaults", {
+o(l, "configDefaults", {
   // Використовуємо Required для гарантії наявності всіх полів
   defaultLifetime: 1
 });
-let f = u;
-const d = (i) => {
+let p = l;
+const c = (r) => {
   const e = {};
-  for (const n of i)
+  for (const n of r)
     if (typeof n == "number") {
       if (typeof e.lifetime < "u")
         throw new s("Seems to duplicate lifetime in arguments");
@@ -194,31 +196,31 @@ const d = (i) => {
     } else
       throw new s(`Can't resolve config argument type: ${typeof n}`);
   return e;
-}, A = (i) => ({
-  value: i,
+}, A = (r) => ({
+  value: r,
   type: 0
   // lifetime автоматично встановлюється в DYNAMIC в методі register
-}), L = (i, ...e) => ({
-  value: i,
+}), L = (r, ...e) => ({
+  value: r,
   type: 2,
-  ...d(e)
+  ...c(e)
   // Розбираємо додаткові аргументи
-}), _ = (i, ...e) => ({
-  value: i,
+}), _ = (r, ...e) => ({
+  value: r,
   type: 1,
-  ...d(e)
+  ...c(e)
   // Розбираємо додаткові аргументи
-}), Y = (i, ...e) => ({
-  value: i,
+}), Y = (r, ...e) => ({
+  value: r,
   type: 3,
-  ...d(e)
+  ...c(e)
   // Розбираємо додаткові аргументи
 });
 export {
-  f as Container,
+  p as Container,
   s as ContainerConfigError,
   w as ContainerCyclicDependenceError,
-  p as ContainerError,
+  a as ContainerError,
   E as LIFETIME_DYNAMIC,
   T as LIFETIME_SINGLETON,
   C as TYPE_CLASS,

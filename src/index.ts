@@ -257,6 +257,13 @@ export class Container<Schema extends TypeSchema = {}> {
                 // Приводимо тип результату build до ResultType
                 result = await this.build<ResultType>(registration);
             }
+        } catch(error: unknown) {
+            // Обробляємо помилки, які можуть виникнути під час побудови
+            if (error instanceof ContainerError) {
+                throw error; // Пробрасываем ошибку дальше
+            } else {
+                throw new ContainerError(`Error while resolving dependency "${id}": ${String(error)}`);
+            }   
         } finally {
             // Видаляємо ID з множини відстеження після завершення (успішного чи ні)
             this.depsInResolving.delete(id);
@@ -284,13 +291,13 @@ export class Container<Schema extends TypeSchema = {}> {
             case TYPE_CLASS:
                 // Переконуємося, що value є конструктором
                 if (typeof config.value !== 'function' || !config.value.prototype) {
-                     throw new ContainerConfigError(`Value for CLASS registration must be a class constructor.`);
+                    throw new ContainerConfigError(`Value for CLASS registration must be a class constructor.`);
                 }
                 return await this.buildClass<T>(config.value as ClassConstructor<T>, dependencies);
             case TYPE_FUNCTION:
                  // Переконуємося, що value є функцією
                 if (typeof config.value !== 'function') {
-                     throw new ContainerConfigError(`Value for FUNCTION registration must be a function.`);
+                    throw new ContainerConfigError(`Value for FUNCTION registration must be a function.`);
                 }
                 // Повертаємо функцію, яка викликає оригінальну функцію з розв'язаними залежностями
                 const func = config.value as DependencyFunction<T>;
@@ -301,7 +308,7 @@ export class Container<Schema extends TypeSchema = {}> {
             case TYPE_FACTORY:
                  // Переконуємося, що value є функцією
                 if (typeof config.value !== 'function') {
-                 throw new ContainerConfigError(`Value for FACTORY registration must be a function.`);
+                    throw new ContainerConfigError(`Value for FACTORY registration must be a function.`);
                 }
                 // Передаємо тип Schema до buildFactory
                 return await this.buildFactory<T>(config.value as FactoryFunction<T, Schema>, config);
@@ -359,14 +366,9 @@ export class Container<Schema extends TypeSchema = {}> {
      */
     private async resolveDependencies(dependencies: Dependencies): Promise<ResolvedDependencies> { // Додаємо типи
         const resolvedDeps: ResolvedDependencies = {};
-        // Асинхронно отримуємо кожну залежність
-        // Використовуємо Promise.all для паралельного завантаження
-        const promises = dependencies.map(depId => this.get(depId));
-        const resolvedValues = await Promise.all(promises);
-
-        dependencies.forEach((depId, index) => {
-            resolvedDeps[depId] = resolvedValues[index];
-        });
+        for (const dep of dependencies) {            
+            resolvedDeps[dep] = await this.get(dep);
+        }
 
         return resolvedDeps;
     }
