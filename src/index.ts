@@ -22,6 +22,8 @@ export type FactoryFunction<T = any, S extends TypeSchema = {}> = (deps: Resolve
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DependencyFunction<T = any> = (deps: ResolvedDependencies, ...args: any[]) => T;
 
+export type FunctionWithDeps = (...args: any[]) => any | Promise<any>; // Функція, яка приймає аргументи і повертає значення
+
 // Інтерфейс для конфігурації реєстрації
 export interface RegistrationConfig {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -440,7 +442,7 @@ export const asClass = (classValue: ClassConstructor, ...args: (Lifetime | Depen
  * @param args - Додаткові параметри: lifetime та/або масив dependencies.
  * @returns Об'єкт конфігурації RegistrationConfig.
  */
-export const asFunction = (functionValue: DependencyFunction, ...args: (Lifetime | Dependencies)[]): RegistrationConfig => { // Додаємо типи
+export const asFunction = (functionValue: FunctionWithDeps, ...args: (Lifetime | Dependencies)[]): RegistrationConfig => { // Додаємо типи
     return {
         value: functionValue,
         type: TYPE_FUNCTION,
@@ -455,8 +457,7 @@ export const asFunction = (functionValue: DependencyFunction, ...args: (Lifetime
  * @param args - Додаткові параметри: lifetime та/або масив dependencies.
  * @returns Об'єкт конфігурації RegistrationConfig.
  */
-// Оновлюємо asFactory, щоб приймати FactoryFunction без вказання схеми (вона буде виведена)
-export const asFactory = (factoryValue: FactoryFunction<any, any>, ...args: (Lifetime | Dependencies)[]): RegistrationConfig => {
+export const asFactory = (factoryValue: FunctionWithDeps, ...args: (Lifetime | Dependencies)[]): RegistrationConfig => {
     return {
         value: factoryValue,
         type: TYPE_FACTORY,

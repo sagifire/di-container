@@ -12,6 +12,7 @@ export type ResolvedDependencies = Record<DependencyId, any>;
 export type ClassConstructor<T = any> = new (...args: any[]) => T;
 export type FactoryFunction<T = any, S extends TypeSchema = {}> = (deps: ResolvedDependencies, container: Container<S> | undefined, config: RegistrationConfig | undefined) => T | Promise<T>;
 export type DependencyFunction<T = any> = (deps: ResolvedDependencies, ...args: any[]) => T;
+export type FunctionWithDeps = (...args: any[]) => any | Promise<any>;
 export interface RegistrationConfig {
     value: any;
     type: RegistrationType;
@@ -110,7 +111,7 @@ export declare const asClass: (classValue: ClassConstructor, ...args: (Lifetime 
  * @param args - Додаткові параметри: lifetime та/або масив dependencies.
  * @returns Об'єкт конфігурації RegistrationConfig.
  */
-export declare const asFunction: (functionValue: DependencyFunction, ...args: (Lifetime | Dependencies)[]) => RegistrationConfig;
+export declare const asFunction: (functionValue: FunctionWithDeps, ...args: (Lifetime | Dependencies)[]) => RegistrationConfig;
 /**
  * Створює конфігурацію для реєстрації фабричної функції.
  * Фабрика отримує залежності, контейнер та конфігурацію як аргументи.
@@ -118,4 +119,4 @@ export declare const asFunction: (functionValue: DependencyFunction, ...args: (L
  * @param args - Додаткові параметри: lifetime та/або масив dependencies.
  * @returns Об'єкт конфігурації RegistrationConfig.
  */
-export declare const asFactory: (factoryValue: FactoryFunction<any, any>, ...args: (Lifetime | Dependencies)[]) => RegistrationConfig;
+export declare const asFactory: (factoryValue: FunctionWithDeps, ...args: (Lifetime | Dependencies)[]) => RegistrationConfig;
