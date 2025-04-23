@@ -267,7 +267,7 @@ export class Container<Schema extends TypeSchema = {}> {
      * @template T - Очікуваний тип залежності.
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async build<T = any>(config: RegistrationConfig): Promise<T> { // Додаємо тип для config, повертаного значення та Generic T
+    async build<T = any>(config: RegistrationConfig): Promise<T> { // Додаємо тип для config, повертаного значення та Generic T
         // Визначаємо залежності для побудови
         const dependencies = config.dependencies || []; // Використовуємо пустий масив, якщо залежності не вказані
 

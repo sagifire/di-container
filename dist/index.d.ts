@@ -67,7 +67,7 @@ export declare class Container<Schema extends TypeSchema = {}> {
      * @returns Проміс, який розв'язується екземпляром залежності.
      * @template T - Очікуваний тип залежності.
      */
-    private build;
+    build<T = any>(config: RegistrationConfig): Promise<T>;
     /**
      * Будує екземпляр класу з розв'язаними залежностями.
      * @param classConstructor - Конструктор класу.
