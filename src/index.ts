@@ -18,7 +18,7 @@ export type ResolvedDependencies = Record<DependencyId, any>; // Можна ут
 export type ClassConstructor<T = any> = new (...args: any[]) => T; // Тип для конструктора класу
 // Оновлюємо FactoryFunction, щоб приймати дженерік Container
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FactoryFunction<T = any, S extends TypeSchema = {}> = (deps: ResolvedDependencies, container: Container<S>, config: RegistrationConfig) => T | Promise<T>;
+export type FactoryFunction<T = any, S extends TypeSchema = {}> = (deps: ResolvedDependencies, container: Container<S> | undefined, config: RegistrationConfig | undefined) => T | Promise<T>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DependencyFunction<T = any> = (deps: ResolvedDependencies, ...args: any[]) => T;
 

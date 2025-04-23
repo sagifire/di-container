@@ -10,7 +10,7 @@ export type DependencyId = string;
 export type Dependencies = DependencyId[];
 export type ResolvedDependencies = Record<DependencyId, any>;
 export type ClassConstructor<T = any> = new (...args: any[]) => T;
-export type FactoryFunction<T = any, S extends TypeSchema = {}> = (deps: ResolvedDependencies, container: Container<S>, config: RegistrationConfig) => T | Promise<T>;
+export type FactoryFunction<T = any, S extends TypeSchema = {}> = (deps: ResolvedDependencies, container: Container<S> | undefined, config: RegistrationConfig | undefined) => T | Promise<T>;
 export type DependencyFunction<T = any> = (deps: ResolvedDependencies, ...args: any[]) => T;
 export interface RegistrationConfig {
     value: any;
