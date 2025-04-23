@@ -1,18 +1,18 @@
 var y = Object.defineProperty;
 var h = (i, e, n) => e in i ? y(i, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : i[e] = n;
 var a = (i, e, n) => h(i, typeof e != "symbol" ? e + "" : e, n);
-const g = 0, T = 1, v = 0, I = 1, C = 2, m = 3;
-class p extends Error {
+const T = 0, v = 1, g = 0, I = 1, C = 2, m = 3;
+class d extends Error {
   constructor(e) {
     super(e), this.name = "ContainerError";
   }
 }
-class s extends p {
+class s extends d {
   constructor(e) {
     super(e), this.name = "ContainerConfigError";
   }
 }
-class w extends p {
+class w extends d {
   constructor(e) {
     super(e), this.name = "ContainerCyclicDependenceError";
   }
@@ -70,7 +70,7 @@ const u = class u {
         if (typeof t.dependencies > "u")
           t.dependencies = [];
         else if (Array.isArray(t.dependencies)) {
-          if (!t.dependencies.every((d) => typeof d == "string"))
+          if (!t.dependencies.every((c) => typeof c == "string"))
             throw new s("Registration dependencies must be an array of strings");
         } else throw new s("Registration dependencies must be an array");
         delete t._deps;
@@ -110,7 +110,8 @@ const u = class u {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async build(e) {
-    const n = e.dependencies || [];
+    var t;
+    const n = e.dependencies || ((t = e == null ? void 0 : e.value) == null ? void 0 : t._deps) || [];
     switch (e.type) {
       case 2:
         if (typeof e.value != "function" || !e.value.prototype)
@@ -119,8 +120,8 @@ const u = class u {
       case 1:
         if (typeof e.value != "function")
           throw new s("Value for FUNCTION registration must be a function.");
-        const t = e.value, r = await this.resolveDependencies(n);
-        return (...l) => t(r, ...l);
+        const r = e.value, o = await this.resolveDependencies(n);
+        return (...c) => r(o, ...c);
       // Приведення типу може бути не зовсім точним тут
       case 3:
         if (typeof e.value != "function")
@@ -129,8 +130,8 @@ const u = class u {
       case 0:
         return e.value;
       default:
-        const o = e.type;
-        throw new s(`Unhandled registration type: ${o}`);
+        const l = e.type;
+        throw new s(`Unhandled registration type: ${l}`);
     }
   }
   /**
@@ -175,8 +176,8 @@ a(u, "configDefaults", {
   // Використовуємо Required для гарантії наявності всіх полів
   defaultLifetime: 1
 });
-let f = u;
-const c = (i) => {
+let p = u;
+const f = (i) => {
   const e = {};
   for (const n of i)
     if (typeof n == "number") {
@@ -201,30 +202,30 @@ const c = (i) => {
 }), Y = (i, ...e) => ({
   value: i,
   type: 2,
-  ...c(e)
+  ...f(e)
   // Розбираємо додаткові аргументи
 }), A = (i, ...e) => ({
   value: i,
   type: 1,
-  ...c(e)
+  ...f(e)
   // Розбираємо додаткові аргументи
 }), F = (i, ...e) => ({
   value: i,
   type: 3,
-  ...c(e)
+  ...f(e)
   // Розбираємо додаткові аргументи
 });
 export {
-  f as Container,
+  p as Container,
   s as ContainerConfigError,
   w as ContainerCyclicDependenceError,
-  p as ContainerError,
-  g as LIFETIME_DYNAMIC,
-  T as LIFETIME_SINGLETON,
+  d as ContainerError,
+  T as LIFETIME_DYNAMIC,
+  v as LIFETIME_SINGLETON,
   C as TYPE_CLASS,
   m as TYPE_FACTORY,
   I as TYPE_FUNCTION,
-  v as TYPE_VALUE,
+  g as TYPE_VALUE,
   Y as asClass,
   F as asFactory,
   A as asFunction,

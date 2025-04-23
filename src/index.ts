@@ -269,7 +269,7 @@ export class Container<Schema extends TypeSchema = {}> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async build<T = any>(config: RegistrationConfig): Promise<T> { // Додаємо тип для config, повертаного значення та Generic T
         // Визначаємо залежності для побудови
-        const dependencies = config.dependencies || []; // Використовуємо пустий масив, якщо залежності не вказані
+        const dependencies = config.dependencies || config?.value?._deps || []; // Використовуємо пустий масив, якщо залежності не вказані
 
         // Будуємо екземпляр відповідно до типу реєстрації
         switch (config.type) {
