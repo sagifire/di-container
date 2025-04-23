@@ -1,8 +1,15 @@
+/// <reference types="vitest" />
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
+  // Додаємо конфігурацію для Vitest
+  test: {
+    globals: true, // Використовувати глобальні змінні Vitest (describe, it, expect)
+    environment: 'node', // Середовище виконання тестів
+    // Можна додати інші налаштування Vitest тут
+  },
   plugins: [
     dts({
       // Вказуємо, що файл декларації потрібно помістити в корінь 'dist'

@@ -1,5 +1,4 @@
-import { strict as assert } from 'assert';
-import { describe, it } from 'mocha';
+import { describe, it, expect } from 'vitest';
 import {
     Container,
     ContainerConfigError,
@@ -11,7 +10,7 @@ import {
     LIFETIME_DYNAMIC,
     LIFETIME_SINGLETON,
     TYPE_VALUE
-} from '../src/index.js';
+} from '../dist/es/index.js';
 
 describe('Container', () => {
 
@@ -20,7 +19,7 @@ describe('Container', () => {
         container.register('config', asValue('someConfig'));
 
         const result = await container.get('config');
-        assert.equal(result, 'someConfig');
+        expect(result).toBe('someConfig');
     });
 
     it('should register and resolve a class instance', async () => {
@@ -34,8 +33,8 @@ describe('Container', () => {
         container.register('myClass', asClass(MyClass));
 
         const instance = await container.get('myClass');
-        assert(instance instanceof MyClass);
-        assert.equal(instance.name, 'MyClassInstance');
+        expect(instance).toBeInstanceOf(MyClass);
+        expect(instance.name).toBe('MyClassInstance');
     });
 
     it('should resolve dependencies for a class', async () => {
@@ -56,8 +55,8 @@ describe('Container', () => {
         container.register('myClass', asClass(MyClass, ['dep']));
 
         const instance = await container.get('myClass');
-        assert(instance.dep instanceof Dependency);
-        assert.equal(instance.dep.value, 'dependency');
+        expect(instance.dep).toBeInstanceOf(Dependency);
+        expect(instance.dep.value).toBe('dependency');
     });
 
     it('should register and resolve a function', async () => {
@@ -70,7 +69,7 @@ describe('Container', () => {
         container.register('myFunction', asFunction(myFunction, ['config']));
 
         const func = await container.get('myFunction');
-        assert.equal(func(), 'Value: myConfig');
+        expect(func()).toBe('Value: myConfig');
     });
 
     it('should register and resolve a factory', async () => {
@@ -83,14 +82,14 @@ describe('Container', () => {
         container.register('myFactory', asFactory(myFactory, ['dep']));
 
         const result = await container.get('myFactory');
-        assert.equal(result, 'dependency from factory');
+        expect(result).toBe('dependency from factory');
     });
 
     it('should throw an error for undefined registration value', () => {
         const container = new Container();
-        assert.throws(() => {
+        expect(() => {
             container.register('invalid', { type: TYPE_VALUE });
-        }, ContainerConfigError);
+        }).toThrow(ContainerConfigError);
     });
 
     it('should allow singleton and dynamic lifetimes', async () => {
@@ -105,16 +104,16 @@ describe('Container', () => {
         // Singleton instance
         container.register('singletonClass', asClass(MyClass, [], LIFETIME_SINGLETON));
         const singletonInstance1 = await container.get('singletonClass');
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise(r => setTimeout(r, 10)); // Reduced timeout for faster tests
         const singletonInstance2 = await container.get('singletonClass');
-        assert.equal(singletonInstance1.timestamp, singletonInstance2.timestamp);
+        expect(singletonInstance1.timestamp).toBe(singletonInstance2.timestamp);
 
         // Dynamic instance
         container.register('dynamicClass', asClass(MyClass, [], LIFETIME_DYNAMIC));
         const dynamicInstance1 = await container.get('dynamicClass');
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise(r => setTimeout(r, 10)); // Reduced timeout for faster tests
         const dynamicInstance2 = await container.get('dynamicClass');
-        assert.notEqual(dynamicInstance1.timestamp, dynamicInstance2.timestamp);
+        expect(dynamicInstance1.timestamp).not.toBe(dynamicInstance2.timestamp);
     });
 
     it('should allow manual build of a class', async () => {
@@ -130,7 +129,7 @@ describe('Container', () => {
         const config = asClass(MyClass, ['dep']);
         const instance = await container.build(config);
 
-        assert.equal(instance.dep, 'dependency');
+        expect(instance.dep).toBe('dependency');
     });
 
     it('should resolve nested dependencies', async () => {
@@ -158,17 +157,17 @@ describe('Container', () => {
         container.register('myClass', asClass(MyClass, ['dep2']));
 
         const instance = await container.get('myClass');
-        assert.equal(instance.dep2.dep1.name, 'Dependency1');
+        expect(instance.dep2.dep1.name).toBe('Dependency1');
     });
 
     it('should throw error for invalid type in registration', () => {
         const container = new Container();
-        assert.throws(() => {
+        expect(() => {
             container.register('invalid', { value: 'test', type: 99 });
-        }, ContainerConfigError);
+        }).toThrow(ContainerConfigError);
     });
 
-    it('should throw error for cycle dependency', () => {
+    it('should throw error for cycle dependency', async () => { // Make async for rejects
         class Dependency1 {
             constructor() {
                 this.name = 'Dependency1';
@@ -192,9 +191,7 @@ describe('Container', () => {
         container.register('dep2', asClass(Dependency2, ['dep1']));
         container.register('myClass', asClass(MyClass, ['dep2']));
 
-        assert.rejects(async () => {
-            const instance = await container.get('myClass');
-        }, ContainerCyclicDependenceError);
+        await expect(container.get('myClass')).rejects.toThrow(ContainerCyclicDependenceError);
     });
 
 });
