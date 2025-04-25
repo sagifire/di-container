@@ -1,6 +1,6 @@
 {
   "name": "@sagifire/di-container",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "description": "A lightweight and flexible dependency injection container designed to manage object lifetimes and resolve dependencies efficiently in TypeScript/JavaScript applications.",
   "types": "dist/index.d.ts",
   "main": "dist/cjs/index.js",

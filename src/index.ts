@@ -311,7 +311,7 @@ export class Container<Schema extends TypeSchema = {}> {
                     throw new ContainerConfigError(`Value for FACTORY registration must be a function.`);
                 }
                 // Передаємо тип Schema до buildFactory
-                return await this.buildFactory<T>(config.value as FactoryFunction<T, Schema>, config);
+                return await this.buildFactory<T>(config.value as FactoryFunction<T, Schema>, { ...config, dependencies });
             case TYPE_VALUE:
                 // Просто повертаємо значення
                 return config.value as T;
