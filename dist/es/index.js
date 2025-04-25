@@ -127,7 +127,7 @@ const l = class l {
       case 3:
         if (typeof e.value != "function")
           throw new s("Value for FACTORY registration must be a function.");
-        return await this.buildFactory(e.value, e);
+        return await this.buildFactory(e.value, { ...e, dependencies: n });
       case 0:
         return e.value;
       default:
